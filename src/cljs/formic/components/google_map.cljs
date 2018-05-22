@@ -110,7 +110,7 @@
           [:div.map-wrapper
            (when autocomplete
              [:label.formic-auto-complete
-              [:span.formic-input-title (u/format-kw (:id f))]
+              [:span.formic-input-tutle "Address:"]
               [:input
                {:value (case (:address @current-value)
                          :not-found ""
