@@ -89,7 +89,7 @@
                         "place_changed"
                         (fn []
                           (reset! touched true)
-                          (if-let [place (.getPlace @autocomplete)]
+                          (if-let [place (.getPlace @autocompleter)]
                             (when place.geometry
                               (if place.geometry.viewport
                                 (.fitBounds @map place.geometry.viewport)
@@ -110,7 +110,7 @@
           [:div.map-wrapper
            (when autocomplete
              [:label.formic-auto-complete
-              [:span "Address:"]
+              [:span.formic-input-title (u/format-kw (:id f))]
               [:input
                {:value (case (:address @current-value)
                          :not-found ""
