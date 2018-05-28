@@ -11,7 +11,7 @@
 
 (require '[adzerk.bootlaces :refer :all])
 
-(bootstrap! version)
+(bootlaces! version)
 
 (task-options!
  pom {:project     project
