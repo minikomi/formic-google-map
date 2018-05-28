@@ -5,8 +5,6 @@
    [formic.field :as field]
    [clojure.string :as s]))
 
-
-
 (defn map->lat-lng [{:keys [lat lng]}]
   (when (and lat lng)
     (js/google.maps.LatLng. lat lng)))
