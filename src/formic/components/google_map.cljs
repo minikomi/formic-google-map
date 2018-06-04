@@ -103,9 +103,9 @@
       :reagent-render
       (fn [{:keys [current-value err] :as f}]
         [:div
-         [:span.formic-input-title (fu/format-kw (:id f))]
+         [:h5.formic-input-title (fu/format-kw (:id f))]
          [:div.formic-google-map
-          [:div.map-wrapper
+          [:div.formic-map-wrapper
            (when autocomplete
              [:label.formic-auto-complete
               [:span.formic-input-tutle "Address:"]
@@ -118,7 +118,7 @@
                 :ref (fn [el] (reset! autocomplete-input-el el))}]
               (when (= :not-found (:address @current-value))
                 [:h4.not-found "Not Found."])])
-           [:div.map-holder
+           [:div.formic-map-holder
             {:ref (fn [el] (reset! map-holder-el el))}]
            [:label.formic-lat-lng
             [:span "Lat:"]
