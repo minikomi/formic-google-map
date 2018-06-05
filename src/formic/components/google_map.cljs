@@ -3,7 +3,8 @@
    [reagent.core :as r]
    [formic.util :as fu]
    [formic.field :as field]
-   [clojure.string :as s]))
+   [clojure.string :as s]
+   ))
 
 (defn map->lat-lng [{:keys [lat lng]}]
   (when (and lat lng)
@@ -146,3 +147,6 @@
                      :value (if-let [lat (:lng @current-value)]
                               (.toPrecision lat 8)
                               "")}]]]]])})))
+(field/register-component
+ :formic-google-map
+ {:component google-map})
