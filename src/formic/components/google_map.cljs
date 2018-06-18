@@ -18,7 +18,8 @@
                 (swap! current-value assoc
                        :address (.-formatted_address (first results)))))))
 
-(defn google-map [{:keys [current-value touched err autocomplete] :as f}]
+(defn google-map [{:keys [current-value touched err options] :as f}
+                  {:keys [autocomplete default-lat-lng] options}]
   (let [state (r/atom :init)
         map (r/atom nil)
         map-holder-el (r/atom nil)
@@ -27,6 +28,7 @@
         address-val (r/atom "")
         marker (r/atom nil)
         geocoder (r/atom nil)
+        default-lat-lng (or default-lat-lng {:lat 35.6895 :lng 139.6917})
         update-on-event (fn [ev]
                           (reset! touched true)
                           (.stop ev)
@@ -64,12 +66,13 @@
         (reset! map
                 (js/google.maps.Map.
                  @map-holder-el
-                 (clj->js {:center (js/google.maps.LatLng. 35.6895 139.6917)
+                 (clj->js {:center (js/google.maps.LatLng. (:lat default-lat-lng) (:lng default-lat-lng))
                            :zoom 12})))
         ;; create marker
         (reset! marker
                 (js/google.maps.Marker.
-                 (clj->js {:center (js/google.maps.LatLng. 35.6895 139.6917)
+                 (clj->js {:center (js/google.maps.LatLng.
+                                    (:lat default-lat-lng) (:lng default-lat-lng))
                            :map @map
                            :draggable true
                            :animation js/google.maps.Animation.DROP
