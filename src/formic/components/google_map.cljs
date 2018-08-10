@@ -10,17 +10,17 @@
   (when (and lat lng)
     (js/google.maps.LatLng. lat lng)))
 
-(defn geocode-position [geocoder current-value]
+(defn geocode-position [geocoder value]
   (.geocode @geocoder
-            (clj->js {:location (map->lat-lng @current-value)})
+            (clj->js {:location (map->lat-lng @value)})
             (fn [results status]
               (when (= status "OK")
-                (swap! current-value assoc
+                (swap! value assoc
                        :address (.-formatted_address (first results)))))))
 
-(defn google-map [{:keys [current-value touched err options] :as f}
-                  {:keys [autocomplete default-lat-lng] options}]
-  (let [state (r/atom :init)
+(defn google-map [{:keys [value touched err options] :as f}]
+  (let [{:keys [autocomplete default-lat-lng]} options
+        state (r/atom :init)
         map (r/atom nil)
         map-holder-el (r/atom nil)
         autocomplete-input-el (r/atom nil)
@@ -32,32 +32,32 @@
         update-on-event (fn [ev]
                           (reset! touched true)
                           (.stop ev)
-                          (swap! current-value
+                          (swap! value
                                  assoc
                                  :lat (ev.latLng.lat)
                                  :lng (ev.latLng.lng))
-                          (when autocomplete (geocode-position geocoder current-value)))]
+                          (when autocomplete (geocode-position geocoder value)))]
     (r/create-class
      {:component-will-mount
       (fn [_ _]
         (when (and js/navigator.geolocation
                    (and
-                    (nil? (:lat @current-value))
-                    (nil? (:lng @current-value))))
+                    (nil? (:lat @value))
+                    (nil? (:lng @value))))
           (js/navigator.geolocation.getCurrentPosition
            (fn [pos]
-             (swap! current-value assoc
+             (swap! value assoc
                     :lat (.. pos -coords -latitude)
                     :lng (.. pos -coords -longitude))
-             (when autocomplete (geocode-position geocoder current-value)))))
+             (when autocomplete (geocode-position geocoder value)))))
         (r/track! (fn []
                     (when (and @map
                                @marker
-                               (:lat @current-value)
-                               (:lng @current-value))
+                               (:lat @value)
+                               (:lng @value))
                       (let [latlng (js/google.maps.LatLng.
-                                    (:lat @current-value)
-                                    (:lng @current-value))]
+                                    (:lat @value)
+                                    (:lng @value))]
                         (.panTo @map latlng)
                         (.setPosition @marker latlng))))))
       :component-did-mount
@@ -98,14 +98,14 @@
                                 (do
                                   (.setCenter @map place.geometry.location)
                                   (.setZoom @map 17)))
-                              (swap! current-value assoc
+                              (swap! value assoc
                                      :address (.. @autocomplete-input-el -value)
                                      :lat (place.geometry.location.lat)
                                      :lng (place.geometry.location.lng)))
-                            (swap! current-value assoc :address :not-found)))))
+                            (swap! value assoc :address :not-found)))))
         (reset! state :active))
       :reagent-render
-      (fn [{:keys [current-value err] :as f}]
+      (fn [{:keys [value err] :as f}]
         [:div
          [:h5.formic-input-title (fu/format-kw (:id f))]
          [:div.formic-google-map
@@ -114,13 +114,13 @@
              [:label.formic-auto-complete
               [:span.formic-input-tutle "Address:"]
               [:input
-               {:value (case (:address @current-value)
+               {:value (case (:address @value)
                          :not-found ""
                          nil ""
-                         (:address @current-value))
-                :on-change #(swap! current-value assoc :address (.. % -target -value))
+                         (:address @value))
+                :on-change #(swap! value assoc :address (.. % -target -value))
                 :ref (fn [el] (reset! autocomplete-input-el el))}]
-              (when (= :not-found (:address @current-value))
+              (when (= :not-found (:address @value))
                 [:h4.not-found "Not Found."])])
            [:div.formic-map-holder
             {:ref (fn [el] (reset! map-holder-el el))}]
@@ -132,9 +132,9 @@
                      :on-change (fn [ev]
                                   (reset! touched true)
                                   (when-let [v (not-empty (.. ev -target -value))]
-                                    (swap! current-value assoc :lat (js/parseFloat v))
-                                    (when autocomplete (geocode-position geocoder current-value))))
-                     :value (if-let [lat (:lat @current-value)]
+                                    (swap! value assoc :lat (js/parseFloat v))
+                                    (when autocomplete (geocode-position geocoder value))))
+                     :value (if-let [lat (:lat @value)]
                               (.toPrecision lat 8)
                               "")}]]
            [:label.formic-lat-lng
@@ -145,9 +145,9 @@
                      :on-change (fn [ev]
                                   (reset! touched true)
                                   (when-let [v (not-empty (.. ev -target -value))]
-                                    (swap! current-value assoc :lng (js/parseFloat v))
-                                    (when autocomplete (geocode-position geocoder current-value))))
-                     :value (if-let [lat (:lng @current-value)]
+                                    (swap! value assoc :lng (js/parseFloat v))
+                                    (when autocomplete (geocode-position geocoder value))))
+                     :value (if-let [lat (:lng @value)]
                               (.toPrecision lat 8)
                               "")}]]]]])})))
 (field/register-component
